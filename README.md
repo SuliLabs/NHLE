@@ -53,30 +53,31 @@ All ACNH memory offsets are calibrated for **version 3.0.3** — see [`docs/OFFS
 
 Grab the latest build for your OS from the [**Releases**](https://github.com/SuliLabs/NHLE/releases) page:
 
-| OS | File |
-|---|---|
-| Windows | `NHLE-x.y.z-win-x64.exe` (installer) or `…portable.exe` |
-| Linux | `NHLE-x.y.z-linux-x64.AppImage` or `.deb` |
+| OS | File | Type |
+|---|---|---|
+| Windows | `NHLE-x.y.z-win-x64-portable.exe` | Portable — just run it, no install |
+| Linux (Ubuntu) | `NHLE-x.y.z-linux-x64.AppImage` | Portable — `chmod +x` and run |
+| Any | `Source code (zip / tar.gz)` | Full source (auto-attached by GitHub) |
 
-On Linux, make the AppImage executable first: `chmod +x NHLE-*.AppImage`.
+On Linux, make the AppImage executable first: `chmod +x NHLE-*.AppImage`, then run it.
 
 ### Build from source
 
 ```bash
 git clone https://github.com/SuliLabs/NHLE.git
-cd nhle
+cd NHLE
 npm install
 
 # Run in development (hot reload)
 npm run dev
 
-# Package a release for your current OS
+# Package a portable build for your current OS
 npm run dist          # current platform
-npm run dist:win      # Windows (.exe nsis + portable)
-npm run dist:linux    # Linux (.AppImage + .deb)
+npm run dist:win      # Windows portable .exe
+npm run dist:linux    # Linux AppImage
 ```
 
-Built installers land in `release/`.
+Built portables land in `release/`.
 
 > **Note on shared folders:** `npm install` performs atomic renames that fail on some network/virtual shared filesystems (e.g. VirtualBox `vboxsf`). If install fails with `ENOENT … rename`, copy the project to a native local path first.
 

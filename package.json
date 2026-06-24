@@ -2,7 +2,10 @@
   "name": "nhle",
   "version": "1.0.0",
   "description": "NHLE — New Horizons Live Editor: a cross-platform live memory editor for Animal Crossing: New Horizons 3.0.3 over sys-botbase.",
-  "author": "SuliLabs",
+  "author": {
+    "name": "SuliLabs",
+    "email": "SuliLabs@users.noreply.github.com"
+  },
   "license": "GPL-3.0",
   "homepage": "https://github.com/SuliLabs/NHLE",
   "repository": {
@@ -50,20 +53,13 @@
     ],
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64"] },
         { "target": "portable", "arch": ["x64"] }
       ],
-      "artifactName": "${productName}-${version}-win-${arch}.${ext}"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "perMachine": false
+      "artifactName": "${productName}-${version}-win-${arch}-portable.${ext}"
     },
     "linux": {
       "target": [
-        { "target": "AppImage", "arch": ["x64"] },
-        { "target": "deb", "arch": ["x64"] }
+        { "target": "AppImage", "arch": ["x64"] }
       ],
       "category": "Game",
       "synopsis": "Live memory editor for Animal Crossing: New Horizons",

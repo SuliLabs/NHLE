@@ -49,7 +49,6 @@ jobs:
           path: |
             release/*.exe
             release/*.AppImage
-            release/*.deb
           if-no-files-found: ignore
 
   release:
