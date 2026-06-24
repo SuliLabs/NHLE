@@ -4,10 +4,10 @@
   "description": "NHLE — New Horizons Live Editor: a cross-platform live memory editor for Animal Crossing: New Horizons 3.0.3 over sys-botbase.",
   "author": "SuliLabs",
   "license": "GPL-3.0",
-  "homepage": "https://github.com/SuliLabs/nhle",
+  "homepage": "https://github.com/SuliLabs/NHLE",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SuliLabs/nhle.git"
+    "url": "https://github.com/SuliLabs/NHLE.git"
   },
   "main": "electron/main.js",
   "scripts": {

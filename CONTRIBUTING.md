@@ -7,7 +7,7 @@ especially **new or corrected memory offsets** — are very welcome.
 ## Getting started
 
 ```bash
-git clone https://github.com/SuliLabs/nhle.git
+git clone https://github.com/SuliLabs/NHLE.git
 cd nhle
 npm install
 npm run dev

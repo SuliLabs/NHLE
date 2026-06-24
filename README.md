@@ -6,7 +6,7 @@
 
 Edit your inventory, drop items, tweak turnip prices, freeze time, change walk speed and more — **live, while the game is running**, with no save-file injection.
 
-[![Build & Release](https://github.com/SuliLabs/nhle/actions/workflows/release.yml/badge.svg)](https://github.com/SuliLabs/nhle/actions/workflows/release.yml)
+[![Build & Release](https://github.com/SuliLabs/NHLE/actions/workflows/release.yml/badge.svg)](https://github.com/SuliLabs/NHLE/actions/workflows/release.yml)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue)
 ![ACNH](https://img.shields.io/badge/ACNH-3.0.3-green)
 ![License](https://img.shields.io/badge/license-GPL--3.0-orange)
@@ -51,7 +51,7 @@ All ACNH memory offsets are calibrated for **version 3.0.3** — see [`docs/OFFS
 
 ### Download a release (recommended)
 
-Grab the latest build for your OS from the [**Releases**](https://github.com/SuliLabs/nhle/releases) page:
+Grab the latest build for your OS from the [**Releases**](https://github.com/SuliLabs/NHLE/releases) page:
 
 | OS | File |
 |---|---|
@@ -63,7 +63,7 @@ On Linux, make the AppImage executable first: `chmod +x NHLE-*.AppImage`.
 ### Build from source
 
 ```bash
-git clone https://github.com/SuliLabs/nhle.git
+git clone https://github.com/SuliLabs/NHLE.git
 cd nhle
 npm install
 
