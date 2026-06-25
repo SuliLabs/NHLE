@@ -219,6 +219,7 @@ function InventoryPanel({ connected, useSprites, langIdx, t }) {
   const [busy, setBusy]   = useState(false);
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
+  const [listTab, setListTab] = useState('items');   // items | recipes | variations
   const [selected, setSel]  = useState(null);
   const [itemId, setItemId] = useState('');
   const [amount, setAmount] = useState('1');
@@ -238,11 +239,17 @@ function InventoryPanel({ connected, useSprites, langIdx, t }) {
     return m;
   }, [db]);
 
+  const listSource = useMemo(() => {
+    if (listTab === 'recipes')    return db.recipes;
+    if (listTab === 'variations') return db.items.filter(i => db.varSet.has(i.id.toUpperCase()));
+    return db.items;
+  }, [listTab, db]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();   // case-insensitive search…
-    if (!q) return db.items.slice(0, 500);
-    return db.items.filter(i => nameOf(i).toLowerCase().includes(q) || i.id.toLowerCase().includes(q)).slice(0, 500);
-  }, [search, db, nameOf]);
+    if (!q) return listSource.slice(0, 500);
+    return listSource.filter(i => nameOf(i).toLowerCase().includes(q) || i.id.toLowerCase().includes(q)).slice(0, 500);
+  }, [search, listSource, nameOf]);
 
   const refresh = useCallback(async () => {
     if (!connected) return;
@@ -390,6 +397,12 @@ function InventoryPanel({ connected, useSprites, langIdx, t }) {
 
       {/* right: searchable item list (uppercase) */}
       <div className="nh-card flex flex-col min-h-0 h-full shrink-0" style={{ width: 330, padding: 12 }}>
+        <div className="nh-seg mb-2 shrink-0">
+          {[['items', 'bottom_Item'], ['recipes', 'bottom_Recipe'], ['variations', 'bottom_Variation']].map(([id, key]) => (
+            <button key={id} type="button" onClick={() => setListTab(id)}
+                    className={`nh-seg-btn ${listTab === id ? 'nh-on' : ''}`}>{t(key)}</button>
+          ))}
+        </div>
         <div className="relative mb-2 shrink-0">
           <input className="nh-search" style={{ paddingRight: 36 }} placeholder={`🔎 ${t('search')}`}
                  value={search} onChange={e => setSearch(e.target.value)} spellCheck={false}

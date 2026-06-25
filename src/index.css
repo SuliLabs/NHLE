@@ -347,6 +347,24 @@ input, textarea {
   color: #7a5a12; padding: 18px 20px;
 }
 
+/* segmented category selector (Items / Recipes / Variations) */
+.nh-seg {
+  display: flex; gap: 4px; padding: 4px;
+  background: rgba(150,170,110,0.18); border-radius: 999px;
+}
+.nh-seg-btn {
+  flex: 1; border: none; cursor: pointer;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.3px;
+  padding: 6px 4px; border-radius: 999px;
+  background: transparent; color: var(--pk-text);
+  white-space: nowrap; transition: background 0.12s, color 0.12s, box-shadow 0.12s;
+}
+.nh-seg-btn:hover { background: rgba(255,255,255,0.55); }
+.nh-seg-btn.nh-on {
+  background: linear-gradient(180deg, #8fd35f, #6cb43f);
+  color: #fff; box-shadow: 0 2px 6px rgba(90,140,50,0.3);
+}
+
 /* clear (✕) button inside the search field */
 .nh-search-clear {
   position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
