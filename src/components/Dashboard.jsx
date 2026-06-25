@@ -219,7 +219,7 @@ function InventoryPanel({ connected, useSprites, langIdx, t }) {
   const [busy, setBusy]   = useState(false);
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
-  const [listTab, setListTab] = useState('items');   // items | recipes | variations
+  const [listTab, setListTab] = useState('items');   // items | recipes
   const [selected, setSel]  = useState(null);
   const [itemId, setItemId] = useState('');
   const [amount, setAmount] = useState('1');
@@ -240,9 +240,8 @@ function InventoryPanel({ connected, useSprites, langIdx, t }) {
   }, [db]);
 
   const listSource = useMemo(() => {
-    if (listTab === 'recipes')    return db.recipes;
-    if (listTab === 'variations') return db.items.filter(i => db.varSet.has(i.id.toUpperCase()));
-    return db.items;
+    if (listTab === 'recipes') return db.recipes;   // DIY recipe to learn/craft the item
+    return db.items;                                // the item itself
   }, [listTab, db]);
 
   const filtered = useMemo(() => {
@@ -398,7 +397,7 @@ function InventoryPanel({ connected, useSprites, langIdx, t }) {
       {/* right: searchable item list (uppercase) */}
       <div className="nh-card flex flex-col min-h-0 h-full shrink-0" style={{ width: 330, padding: 12 }}>
         <div className="nh-seg mb-2 shrink-0">
-          {[['items', 'bottom_Item'], ['recipes', 'bottom_Recipe'], ['variations', 'bottom_Variation']].map(([id, key]) => (
+          {[['items', 'bottom_Item'], ['recipes', 'bottom_Recipe']].map(([id, key]) => (
             <button key={id} type="button" onClick={() => setListTab(id)}
                     className={`nh-seg-btn ${listTab === id ? 'nh-on' : ''}`}>{t(key)}</button>
           ))}
