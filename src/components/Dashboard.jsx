@@ -313,9 +313,9 @@ function InventoryPanel({ connected, useSprites, langIdx, t }) {
   }, [connected, refresh]);
 
   return (
-    <div className="h-full flex gap-4 min-h-0" style={{ flexWrap: 'wrap' }}>
+    <div className="h-full flex gap-4 min-h-0">
       {/* left: grid + editor */}
-      <div className="flex flex-col min-w-0 flex-1" style={{ minWidth: 360 }}>
+      <div className="flex flex-col min-w-0 min-h-0 flex-1">
         <div className="flex items-center gap-3 mb-2">
           <h2 className="text-xl font-extrabold">{t('nav_inventory')}</h2>
           <button className="pk-btn" style={{ borderRadius: 999 }} disabled={!connected || busy} onClick={refresh}>{busy ? '…' : t('refreshData')}</button>
@@ -389,9 +389,9 @@ function InventoryPanel({ connected, useSprites, langIdx, t }) {
       </div>
 
       {/* right: searchable item list (uppercase) */}
-      <div className="nh-card flex flex-col min-h-0" style={{ width: 330, padding: 12 }}>
-        <input className="nh-search mb-2" placeholder={`🔎 ${t('search')}`} value={search} onChange={e => setSearch(e.target.value)} spellCheck={false} />
-        <div className="flex-1 overflow-auto -mr-1 pr-1">
+      <div className="nh-card flex flex-col min-h-0 h-full shrink-0" style={{ width: 330, padding: 12 }}>
+        <input className="nh-search mb-2 shrink-0" placeholder={`🔎 ${t('search')}`} value={search} onChange={e => setSearch(e.target.value)} spellCheck={false} />
+        <div className="flex-1 min-h-0 overflow-y-auto -mr-1 pr-1">
           {!dbReady && <div className="text-center text-xs opacity-60 py-6">{t('loadingDb')}</div>}
           {filtered.map((it) => (
             <div key={it.id} onClick={() => pick(it)} className={`nh-row ${selected?.id === it.id ? 'nh-sel' : ''}`}>
@@ -403,7 +403,7 @@ function InventoryPanel({ connected, useSprites, langIdx, t }) {
           ))}
           {dbReady && filtered.length === 0 && <div className="text-center text-xs opacity-60 py-6">{t('noResults')}</div>}
         </div>
-        <div className="text-[11px] opacity-55 pt-2 text-center">{filtered.length} {t('inv_items')}</div>
+        <div className="text-[11px] opacity-55 pt-2 text-center shrink-0">{filtered.length} {t('inv_items')}</div>
       </div>
     </div>
   );
