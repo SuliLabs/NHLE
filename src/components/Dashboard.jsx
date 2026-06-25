@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   ADDR, PHYSICS, getSlotAddress, buildItem, decodeItem, itemKind, WRAP_PAPERS,
-  islandNameAddr, decodeUtf16le, isCleanName,
+  islandNameAddr, characterNameAddr, decodeUtf16le, isCleanName,
 } from '../data/acnh.js';
 import { getItemSlotBase } from '../data/overrides.js';
 import { LANGS } from '../data/langs.js';
@@ -145,28 +145,17 @@ function HomePanel({ connected, host, port, t }) {
     setBusy(true);
     try { const res = await window.sysbot.getInfo(); if (res.ok) setInfo(res.data); } catch { /* ignore */ }
 
-    // Island name — live, self-validating read derived from the confirmed base.
+    // Island + character names — live reads from offsets verified on 3.0.3.
+    const base = getItemSlotBase() ?? ADDR.ItemSlotBase;
     try {
-      const base = getItemSlotBase() ?? ADDR.ItemSlotBase;
       const r = await window.sysbot.peek(hexA(islandNameAddr(base)), 22);
       if (r.ok) { const name = decodeUtf16le(r.data, 10); setIsland(isCleanName(name) ? name : ''); }
       else setIsland('');
     } catch { setIsland(''); }
-
-    // Character name — best-effort, strictly validated so it never shows garbage.
-    // (No confirmed 3.0.3 offset yet; the player block sits just after the town
-    //  name. We scan a short window and accept only a clean UTF-16 token.)
     try {
-      const base = getItemSlotBase() ?? ADDR.ItemSlotBase;
-      const r = await window.sysbot.peek(hexA(islandNameAddr(base)), 0x80);
-      let found = '';
-      if (r.ok) {
-        for (let off = 0x14; off <= 0x70 && !found; off += 2) {
-          const cand = decodeUtf16le(r.data.slice(off * 2), 10);
-          if (isCleanName(cand) && cand.length >= 2) found = cand;
-        }
-      }
-      setChar(found);
+      const r = await window.sysbot.peek(hexA(characterNameAddr(base)), 22);
+      if (r.ok) { const name = decodeUtf16le(r.data, 10); setChar(isCleanName(name) ? name : ''); }
+      else setChar('');
     } catch { setChar(''); }
     setBusy(false);
   }, [connected]);

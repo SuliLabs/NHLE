@@ -218,12 +218,15 @@ export function parseVariationsCSV(text) {
   return ids;
 }
 
-// ── Island / character name (live, self-validating reads) ────────────────────
-// The town/island name sits 0x2BA60 bytes before the player-1 inventory base
-// (InventoryNameOffset from community research; +0x200000 shift already baked
-// into the confirmed 3.0.3 base). It is stored as UTF-16 LE, up to 10 chars.
-export const ISLAND_NAME_OFFSET = 0x2BA60;
-export function islandNameAddr(base) { return (base ?? ADDR.ItemSlotBase) - ISLAND_NAME_OFFSET; }
+// ── Island / character name (live reads, ✓ verified on 3.0.3) ─────────────────
+// Both names sit just before the player-1 inventory base, stored as UTF-16 LE
+// (up to 10 chars). Offsets verified in-game on 3.0.3 by reading known values:
+//   island name    @ ItemSlotBase − 0x2BA5C   (e.g. "rerrewoof")
+//   character name @ ItemSlotBase − 0x2BA40   (= island + 0x1C, e.g. "Luna")
+export const ISLAND_NAME_OFFSET    = 0x2BA5C;
+export const CHARACTER_NAME_OFFSET = 0x2BA40;
+export function islandNameAddr(base)    { return (base ?? ADDR.ItemSlotBase) - ISLAND_NAME_OFFSET; }
+export function characterNameAddr(base) { return (base ?? ADDR.ItemSlotBase) - CHARACTER_NAME_OFFSET; }
 
 // Decode a UTF-16 LE hex string (memory order) into text, stopping at NUL.
 export function decodeUtf16le(hex, maxChars = 10) {

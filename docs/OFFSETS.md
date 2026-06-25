@@ -111,6 +111,16 @@ heap + 0xB29BB758  →  slot 1  ┐
 heap + 0xB29BB7F0  →  slot 20 ┘
 ```
 
+### Island & character names (heap-relative)
+
+Both are stored as **UTF-16 LE**, up to 10 characters, just before the inventory
+base. Verified in-game by reading known values (island `rerrewoof`, player `Luna`).
+
+| Constant | Address | Verification |
+|---|---|---|
+| `islandNameAddr` | `ItemSlotBase − 0x2BA5C` (`0xB298FCFC`) | ✓ read `"rerrewoof"` live |
+| `characterNameAddr` | `ItemSlotBase − 0x2BA40` (`0xB298FD18`, `= island + 0x1C`) | ✓ read `"Luna"` live |
+
 ### Home storage (heap-relative)
 
 | Constant | Address | Verification |
