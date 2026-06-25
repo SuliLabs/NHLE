@@ -53,13 +53,15 @@ All ACNH memory offsets are calibrated for **version 3.0.3** — see [`docs/OFFS
 
 Grab the latest build for your OS from the [**Releases**](https://github.com/SuliLabs/NHLE/releases) page:
 
-| OS | File | Type |
+| OS | File | How to run |
 |---|---|---|
-| Windows | `NHLE-x.y.z-win-x64-portable.exe` | Portable — just run it, no install |
-| Linux (Ubuntu) | `NHLE-x.y.z-linux-x64.AppImage` | Portable — `chmod +x` and run |
+| Windows | `NHLE-x.y.z-win-x64.zip` | Unzip anywhere, run `NHLE.exe` |
+| Linux (Ubuntu) | `NHLE-x.y.z-linux-x64.zip` | Unzip anywhere, run `./nhle` |
 | Any | `Source code (zip / tar.gz)` | Full source (auto-attached by GitHub) |
 
-On Linux, make the AppImage executable first: `chmod +x NHLE-*.AppImage`, then run it.
+Each `.zip` is fully self-contained — the executable plus the files and folders it needs. No installer; just unzip and run. On Linux, mark the binary executable if needed: `chmod +x nhle`.
+
+On first launch NHLE asks for your **Switch IP + port**, confirms the connection, then offers to **download item sprites from the internet** (icons are fetched on demand — nothing is bundled in the app). You can skip that to use offline colour tiles.
 
 ### Build from source
 

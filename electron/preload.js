@@ -57,6 +57,10 @@ contextBridge.exposeInMainWorld('sysbot', {
   // Raw
   raw: (cmd) => invoke('sysbot:raw', cmd),
 
+  // Window controls
+  minimize: () => invoke('app:minimize'),
+  quit:     () => invoke('app:quit'),
+
   // Events from main
   onEvent: (cb) => {
     ipcRenderer.on('sysbot:event', (_, data) => cb(data));

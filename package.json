@@ -53,13 +53,13 @@
     ],
     "win": {
       "target": [
-        { "target": "portable", "arch": ["x64"] }
+        { "target": "zip", "arch": ["x64"] }
       ],
-      "artifactName": "${productName}-${version}-win-${arch}-portable.${ext}"
+      "artifactName": "${productName}-${version}-win-${arch}.${ext}"
     },
     "linux": {
       "target": [
-        { "target": "AppImage", "arch": ["x64"] }
+        { "target": "zip", "arch": ["x64"] }
       ],
       "category": "Game",
       "synopsis": "Live memory editor for Animal Crossing: New Horizons",

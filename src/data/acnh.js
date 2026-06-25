@@ -44,8 +44,10 @@ export const ADDR = {
   PlayerOffset:    0x131F70,
 
   // [MAIN] Collision & time — use pokeMain
-  Collision:       0x02219120,   // ✓ CONFIRMED 3.0.3: reads B95BF800 (CollisionEnable)
-  ActorCollision:  0x0221965C,   // ✓ CONFIRMED 3.0.3: reads 1E2E1000 (ActorCollisionEnable)
+  // ✗ Collision/ActorCollision: the read value matches 3.0.2, but writing the
+  //   2.x patch CRASHES the game on 3.0.3 — NOT a working cheat, kept out of the UI.
+  Collision:       0x02219120,   // reads B95BF800 but patch crashes on 3.0.3
+  ActorCollision:  0x0221965C,   // reads 1E2E1000 but patch crashes on 3.0.3
   FreezeTime:      0x00981B28,   // ✓ CONFIRMED 3.0.3: reads F9203260 (unfreezeTime)
 
   // [MAIN] Speed — use pokeMain    [✗ WRONG: 2.x address is beyond the 3.0.3 NSO; needs re-scan]

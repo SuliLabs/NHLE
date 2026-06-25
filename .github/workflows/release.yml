@@ -47,8 +47,7 @@ jobs:
         with:
           name: nhle-${{ matrix.platform }}
           path: |
-            release/*.exe
-            release/*.AppImage
+            release/*.zip
           if-no-files-found: ignore
 
   release:

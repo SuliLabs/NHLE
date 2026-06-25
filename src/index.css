@@ -63,3 +63,165 @@ input, textarea {
 .hex-input:focus {
   box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
 }
+
+/* ── Animal Crossing skin (ACNHPokerCore layout, ACNH palette) ─────── */
+:root {
+  --pk-bg:       #e8dcb0;  /* warm tan window background  */
+  --pk-titlebar: #6cb43f;  /* leaf-green chrome           */
+  --pk-titlebar2:#5aa336;  /* leaf-green darker           */
+  --pk-panel:    #f3ecce;  /* cream working panels        */
+  --pk-btn:      #8ac95a;  /* green button                */
+  --pk-btn-hi:   #9bd86c;  /* button hover                */
+  --pk-btn-bd:   #4e8a32;  /* button border (deep green)  */
+  --pk-tab:      #5aa336;  /* vertical side tabs          */
+  --pk-tab-act:  #f4b63c;  /* active accent (warm yellow) */
+  --pk-slot:     #fdf8e8;  /* cream item slot             */
+  --pk-slot-bd:  #cbb985;  /* slot border (tan)           */
+  --pk-row:      #f5eecf;  /* list row                    */
+  --pk-row-alt:  #ebe0b8;  /* list row alt                */
+  --pk-row-sel:  #ffe49b;  /* selected row (yellow)       */
+  --pk-row-hd:   #5aa336;  /* list header (green)         */
+  --pk-green:    #2f7d2f;  /* connected / accent text     */
+  --pk-text:     #5c4a30;  /* primary text (brown)        */
+  --pk-on-green: #ffffff;  /* text on green chrome        */
+}
+
+.pk-root {
+  background: var(--pk-bg);
+  color: var(--pk-text);
+  font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+}
+
+.pk-btn {
+  background: var(--pk-btn);
+  border: 2px solid var(--pk-btn-bd);
+  color: var(--pk-on-green);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+  transition: background 0.1s, filter 0.1s;
+}
+.pk-btn:hover:not(:disabled)  { background: var(--pk-btn-hi); }
+.pk-btn:active:not(:disabled) { filter: brightness(1.08); transform: translateY(1px); }
+.pk-btn:disabled              { opacity: 0.45; cursor: default; }
+.pk-btn.pk-on {
+  background: var(--pk-tab-act);
+  border-color: #c98a1e;
+  color: #5c3d05;
+}
+
+.pk-input,
+.pk-select {
+  background: #fffdf4;
+  border: 2px solid var(--pk-slot-bd);
+  color: var(--pk-text);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  outline: none;
+}
+.pk-input:focus,
+.pk-select:focus { border-color: var(--pk-btn-bd); }
+
+.pk-ipbox {
+  background: #fffdf4;
+  border: 2px solid var(--pk-btn-bd);
+  color: var(--pk-green);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 1px;
+  text-align: center;
+  border-radius: 8px;
+  padding: 2px 8px;
+}
+
+/* vertical side tab */
+.pk-vtab {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  background: var(--pk-tab);
+  color: var(--pk-on-green);
+  font-weight: 800;
+  letter-spacing: 2px;
+  font-size: 13px;
+  cursor: pointer;
+  border: none;
+  border-bottom: 2px solid #4e8a32;
+  padding: 10px 7px;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.15);
+  transition: background 0.1s;
+}
+.pk-vtab:hover   { background: #69b246; }
+.pk-vtab.pk-on   { background: var(--pk-tab-act); color: #5c3d05; text-shadow: none; }
+
+/* item grid slot */
+.pk-slot {
+  background: var(--pk-slot);
+  border: 2px solid var(--pk-slot-bd);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  transition: filter 0.1s, box-shadow 0.1s;
+}
+.pk-slot:hover { box-shadow: 0 0 0 3px #f4b63c inset; }
+.pk-slot.pk-empty { background: #efe7c8; border-style: dashed; }
+
+/* toggle switch */
+.pk-toggle {
+  width: 38px; height: 18px;
+  border-radius: 9px;
+  background: #d8c89a;
+  border: 1px solid var(--pk-btn-bd);
+  position: relative; cursor: pointer; flex: none;
+  transition: background 0.15s;
+}
+.pk-toggle.pk-on { background: var(--pk-tab-act); }
+.pk-toggle::after {
+  content: ''; position: absolute; top: 1px; left: 1px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff; transition: left 0.15s;
+}
+.pk-toggle.pk-on::after { left: 21px; }
+
+/* scrollbar inside the AC skin */
+.pk-root ::-webkit-scrollbar        { width: 14px; }
+.pk-root ::-webkit-scrollbar-track  { background: #e0d3a6; }
+.pk-root ::-webkit-scrollbar-thumb  { background: #8ac95a; border: 3px solid #e0d3a6; border-radius: 7px; }
+.pk-root ::-webkit-scrollbar-thumb:hover { background: #6cb43f; }
+
+/* onboarding (connect + sprites) */
+.pk-onboard {
+  background: radial-gradient(circle at 50% 25%, #8fd35f 0%, #6cb43f 45%, #4e9b3a 100%);
+  color: var(--pk-text);
+  font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+}
+.pk-card {
+  background: #fbf6e2;
+  border: 3px solid #fff;
+  border-radius: 22px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+}
+.pk-bigbtn {
+  background: var(--pk-btn);
+  border: 3px solid var(--pk-btn-bd);
+  color: #fff;
+  font-weight: 800;
+  border-radius: 14px;
+  padding: 10px 18px;
+  cursor: pointer;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.15);
+  transition: background 0.1s, transform 0.05s;
+}
+.pk-bigbtn:hover:not(:disabled)  { background: var(--pk-btn-hi); }
+.pk-bigbtn:active:not(:disabled) { transform: translateY(1px); }
+.pk-bigbtn:disabled              { opacity: 0.5; cursor: default; }
+.pk-bigbtn.pk-alt {
+  background: #fffdf4; color: var(--pk-text); border-color: var(--pk-slot-bd);
+  text-shadow: none;
+}

@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
+let mainWindow = null;
 const path = require('path');
 const client = require('./sysbotClient');
 
@@ -20,6 +21,7 @@ function createWindow() {
       nodeIntegration: false,
     },
   });
+  mainWindow = win;
 
   if (isDev) {
     win.loadURL(process.env.ELECTRON_START_URL);
@@ -62,6 +64,10 @@ function wrap(fn) {
     }
   };
 }
+
+// Window controls
+ipcMain.handle('app:minimize', () => { mainWindow?.minimize(); return { ok: true }; });
+ipcMain.handle('app:quit',     () => { client.disconnect(); app.quit(); return { ok: true }; });
 
 // Connection
 ipcMain.handle('sysbot:connect', (_, host, port) =>
