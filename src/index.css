@@ -346,3 +346,23 @@ input, textarea {
   background: #fff4d6; border: 2px solid #e7b94e; border-radius: 18px;
   color: #7a5a12; padding: 18px 20px;
 }
+
+/* clear (✕) button inside the search field */
+.nh-search-clear {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  width: 22px; height: 22px; border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  background: #e2d6a8; color: #6a5a30; font-size: 12px; line-height: 1;
+  transition: background 0.12s, color 0.12s;
+}
+.nh-search-clear:hover { background: #d98a6a; color: #fff; }
+
+/* rounded green scrollbars inside the dashboard (overrides the dark global one) */
+.nh-root ::-webkit-scrollbar        { width: 12px; height: 12px; }
+.nh-root ::-webkit-scrollbar-track  { background: transparent; }
+.nh-root ::-webkit-scrollbar-thumb  {
+  background: #9fcf6e; border: 3px solid transparent; background-clip: padding-box;
+  border-radius: 999px;
+}
+.nh-root ::-webkit-scrollbar-thumb:hover { background: #6cb43f; background-clip: padding-box; }
+.nh-root ::-webkit-scrollbar-corner { background: transparent; }

@@ -390,7 +390,14 @@ function InventoryPanel({ connected, useSprites, langIdx, t }) {
 
       {/* right: searchable item list (uppercase) */}
       <div className="nh-card flex flex-col min-h-0 h-full shrink-0" style={{ width: 330, padding: 12 }}>
-        <input className="nh-search mb-2 shrink-0" placeholder={`🔎 ${t('search')}`} value={search} onChange={e => setSearch(e.target.value)} spellCheck={false} />
+        <div className="relative mb-2 shrink-0">
+          <input className="nh-search" style={{ paddingRight: 36 }} placeholder={`🔎 ${t('search')}`}
+                 value={search} onChange={e => setSearch(e.target.value)} spellCheck={false}
+                 onKeyDown={e => e.key === 'Escape' && setSearch('')} />
+          {search && (
+            <button type="button" onClick={() => setSearch('')} title="✕" className="nh-search-clear">✕</button>
+          )}
+        </div>
         <div className="flex-1 min-h-0 overflow-y-auto -mr-1 pr-1">
           {!dbReady && <div className="text-center text-xs opacity-60 py-6">{t('loadingDb')}</div>}
           {filtered.map((it) => (
