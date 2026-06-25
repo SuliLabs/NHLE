@@ -1,9 +1,25 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, protocol } = require('electron');
 let mainWindow = null;
 const path = require('path');
+const fs = require('fs');
+const yauzl = require('yauzl');
 const client = require('./sysbotClient');
 
 const isDev = !!process.env.ELECTRON_START_URL;
+
+// Item icons load via a custom "spr://" scheme so they work from both the dev
+// http://localhost origin and the packaged file:// origin (a plain file:// <img>
+// is blocked by web security when the page is served over http). Must be
+// registered as privileged BEFORE the app is ready.
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'spr', privileges: { standard: true, secure: true, supportFetchAPI: true, bypassCSP: true } },
+]);
+
+function appIcon() {
+  return isDev
+    ? path.join(__dirname, '..', 'build', 'icon.png')
+    : path.join(process.resourcesPath || __dirname, 'icon.png');
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -12,6 +28,7 @@ function createWindow() {
     minWidth: 960,
     minHeight: 640,
     title: 'NHLE — New Horizons Live Editor',
+    icon: appIcon(),
     backgroundColor: '#0a0a0f',
     titleBarStyle: 'hiddenInset',
     frame: process.platform !== 'win32',
@@ -41,7 +58,23 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  // spr://img/<Name>.png  →  <userData>/SPR/img/<Name>.png
+  protocol.handle('spr', async (request) => {
+    try {
+      const u = new URL(request.url);
+      const rel = decodeURIComponent((u.hostname + u.pathname).replace(/^\/+/, ''));
+      const root = spritesRoot();
+      const filePath = path.normalize(path.join(root, rel));
+      if (!filePath.startsWith(root)) return new Response('', { status: 403 });
+      const data = await fs.promises.readFile(filePath);
+      return new Response(data, { headers: { 'Content-Type': 'image/png' } });
+    } catch {
+      return new Response('', { status: 404 });
+    }
+  });
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   client.disconnect();
@@ -68,6 +101,92 @@ function wrap(fn) {
 // Window controls
 ipcMain.handle('app:minimize', () => { mainWindow?.minimize(); return { ok: true }; });
 ipcMain.handle('app:quit',     () => { client.disconnect(); app.quit(); return { ok: true }; });
+
+// ── Sprites (SPR.zip → userData/SPR) ─────────────────────────────────────────
+// The bundled SPR.zip holds img/<InternalName>.png for every item. It is shipped
+// inside the release and, on the user's first "yes", unpacked once into the
+// per-user data dir so icons load from disk (no network).
+function spritesRoot() { return path.join(app.getPath('userData'), 'SPR'); }
+function spritesMarker() { return path.join(spritesRoot(), '.extracted'); }
+function bundledZipPath() {
+  const candidates = [
+    path.join(__dirname, '..', 'public', 'SPR.zip'),  // dev
+    path.join(process.resourcesPath || '', 'SPR.zip'), // packaged (extraResources)
+    path.join(__dirname, '..', 'dist', 'SPR.zip'),
+  ];
+  for (const c of candidates) { try { if (fs.existsSync(c)) return c; } catch {} }
+  return null;
+}
+
+ipcMain.handle('sprites:status', () => ({
+  ok: true,
+  data: {
+    extracted: fs.existsSync(spritesMarker()),
+    dir: spritesRoot(),
+    hasZip: !!bundledZipPath(),
+  },
+}));
+ipcMain.handle('sprites:dir', () => ({ ok: true, data: spritesRoot() }));
+
+// Index of every available sprite basename (without ".png"), so the renderer can
+// resolve the right filename (plain / _Remake_b_p / variation suffix) in one shot
+// instead of probing the disk with 404s.
+ipcMain.handle('sprites:names', () => {
+  try {
+    const dir = path.join(spritesRoot(), 'img');
+    const names = fs.readdirSync(dir)
+      .filter(f => f.endsWith('.png'))
+      .map(f => f.slice(0, -4));
+    return { ok: true, data: names };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+ipcMain.handle('sprites:extract', (evt) => new Promise((resolve) => {
+  // Already unpacked → succeed instantly.
+  if (fs.existsSync(spritesMarker())) {
+    return resolve({ ok: true, data: { dir: spritesRoot(), total: 0, skipped: true } });
+  }
+  const zipPath = bundledZipPath();
+  if (!zipPath) return resolve({ ok: false, error: 'SPR.zip not found' });
+
+  const outRoot = spritesRoot();
+  try { fs.mkdirSync(outRoot, { recursive: true }); } catch (e) { return resolve({ ok: false, error: e.message }); }
+
+  yauzl.open(zipPath, { lazyEntries: true }, (err, zip) => {
+    if (err) return resolve({ ok: false, error: err.message });
+    const total = zip.entryCount;
+    let done = 0, lastSent = 0;
+    const send = () => {
+      const now = Date.now();
+      if (now - lastSent > 80 || done >= total) {
+        lastSent = now;
+        try { evt.sender.send('sprites:progress', { done, total }); } catch {}
+      }
+    };
+    zip.on('entry', (entry) => {
+      const safe = entry.fileName.replace(/\\/g, '/');
+      const outPath = path.join(outRoot, safe);
+      if (/\/$/.test(safe)) { try { fs.mkdirSync(outPath, { recursive: true }); } catch {} done++; zip.readEntry(); return; }
+      try { fs.mkdirSync(path.dirname(outPath), { recursive: true }); } catch {}
+      zip.openReadStream(entry, (e2, rs) => {
+        if (e2) { zip.close(); return resolve({ ok: false, error: e2.message }); }
+        const ws = fs.createWriteStream(outPath);
+        ws.on('error', (e3) => { zip.close(); resolve({ ok: false, error: e3.message }); });
+        ws.on('close', () => { done++; send(); zip.readEntry(); });
+        rs.pipe(ws);
+      });
+    });
+    zip.on('end', () => {
+      try { fs.writeFileSync(spritesMarker(), String(Date.now())); } catch {}
+      try { evt.sender.send('sprites:progress', { done: total, total }); } catch {}
+      resolve({ ok: true, data: { dir: outRoot, total } });
+    });
+    zip.on('error', (e) => resolve({ ok: false, error: e.message }));
+    zip.readEntry();
+  });
+}));
 
 // Connection
 ipcMain.handle('sysbot:connect', (_, host, port) =>

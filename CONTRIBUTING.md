@@ -1,8 +1,8 @@
 # Contributing to NHLE
 
 Thanks for your interest in improving NHLE! This project is a community
-re-implementation of ACNHPokerCore for ACNH 3.0.3, and contributions —
-especially **new or corrected memory offsets** — are very welcome.
+live memory editor for ACNH 3.0.3, and contributions — especially
+**new or corrected memory offsets** — are very welcome.
 
 ## Getting started
 

@@ -7,8 +7,8 @@ Nintendo Switch, accessed remotely through
 All offsets used by NHLE live in [`../src/data/acnh.js`](../src/data/acnh.js).
 This document explains what each one holds and how it was verified.
 
-> Reference baseline: [ACNHPokerCore](https://github.com/Berichan/ACNHPoker)
-> (offsets for ACNH 2.x).
+> Baseline: community-documented ACNH **2.x** offsets, re-derived and
+> re-verified here for **3.0.3** (see [the +0x200000 shift](#the-0x200000-shift)).
 
 ---
 

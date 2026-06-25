@@ -6,7 +6,7 @@ export const MAP_SLOT_COUNT   = 96;          // = 0x600 / 16 items in the left l
 //
 // Verification status for ACNH 3.0.3
 //   ✓ CONFIRMED: address validated by reading expected value from live Switch
-//   ? UNVERIFIED: address from ACNHPokerCore/community; needs in-game confirmation
+//   ? UNVERIFIED: address from community research; needs in-game confirmation
 //   ✗ WRONG: confirmed incorrect — address shifted in 3.0.3, correct value unknown
 // Count encoding: item count stored as (quantity - 1). 1 item = 0, 2 items = 1, etc.
 
@@ -121,15 +121,63 @@ export function buildDropRight(itemId4) {
   return 'FDFF0000' + idF + '0100' + 'FDFF0000' + idF + '0101';
 }
 
-// Build 8-byte poke value for an item slot
-// Layout in memory: [id_low, id_high, variation, 0x00, cnt_b0, cnt_b1, cnt_b2, cnt_b3]
-// count is human-facing (1 = 1 item); stored as (count-1) per ACNH 3.0.3 encoding
+// Legacy 8-byte builder kept for callers that only need id+count.
+// Prefer buildItem() which encodes the full ACNH item struct.
 export function buildItemBytes(itemId, count = 1, variation = 0) {
-  const id = itemId.replace(/^0x/i, '').padStart(4, '0').toUpperCase();
-  const idField = id.slice(2) + id.slice(0, 2) +
-                  variation.toString(16).padStart(2, '0').toUpperCase() + '00';
-  const cnt = flipHex(Math.max(0, count - 1).toString(16).padStart(8, '0'));
-  return '0x' + idField + cnt;
+  return buildItem(itemId, { count, variation, kind: variation ? 'variable' : 'stackable' });
+}
+
+// ── Full ACNH item struct (8 bytes), per NHSE Item.cs ─────────────────
+//  [0..1] ItemId  u16 LE
+//  [2]    SystemParam : rotation(bits0-1), buried 0x04, dropped 0x20
+//  [3]    AdditionalParam : wrap type(bits0-1) + paper(bits2-5) + showItem 0x40
+//  [4..7] FreeParam u32, interpreted by kind:
+//           stackable → Count (stored as count-1 on 3.0.3)
+//           variable  → BodyType(bits0-2) | PatternChoice(bits5+)
+//           tool      → UseCount / durability (u16 at [6..7])
+export const WRAP_PAPERS = ['Yellow','Pink','Orange','LightGreen','Green','Mint','LightBlue','Purple','Navy','Blue','White','Red','Gold','Brown','Gray','Black'];
+
+export function buildItem(id, opts = {}) {
+  const { count = 1, variation = 0, pattern = 0, durability = null,
+          wrap = false, paper = 0, buried = false, rotation = 0, kind = 'stackable' } = opts;
+  const idn = (parseInt(String(id).replace(/^0x/i, ''), 16) || 0) & 0xFFFF;
+  const sys = ((rotation & 3) | (buried ? 0x04 : 0)) & 0xFF;
+  const add = (wrap ? (1 | ((paper & 0xF) << 2)) : 0) & 0xFF;   // type 1 = WrappingPaper
+  let free;
+  if (kind === 'tool' && durability != null) free = (durability & 0xFFFF) << 16;
+  else if (kind === 'variable')              free = (variation & 7) | ((pattern & 0x7FF) << 5);
+  else                                        free = Math.max(0, (count | 0) - 1) & 0xFFFFFFFF;
+  free >>>= 0;
+  const b = [idn & 0xFF, (idn >> 8) & 0xFF, sys, add,
+             free & 0xFF, (free >> 8) & 0xFF, (free >> 16) & 0xFF, (free >> 24) & 0xFF];
+  return '0x' + b.map(x => x.toString(16).padStart(2, '0').toUpperCase()).join('');
+}
+
+// Decode 8 bytes (16 hex chars, memory order) into all candidate fields.
+// The caller picks count/variation/durability based on the item's kind.
+export function decodeItem(hex) {
+  if (!hex || hex.length < 16) return null;
+  const by = i => parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  const id = ((by(1) << 8) | by(0)) & 0xFFFF;
+  const itemId = id.toString(16).toUpperCase().padStart(4, '0');
+  const sys = by(2), add = by(3);
+  const free = ((by(7) << 24) | (by(6) << 16) | (by(5) << 8) | by(4)) >>> 0;
+  const empty = itemId === 'FFFE';
+  return {
+    itemId, raw: free,
+    rotation: sys & 3, buried: !!(sys & 0x04), dropped: !!(sys & 0x20),
+    wrap: (add & 3) !== 0, paper: (add >> 2) & 0xF,
+    count: empty ? 0 : (free & 0xFFFF) + 1,
+    variation: free & 7,
+    pattern: (free >> 5) & 0x7FF,
+    durability: (free >> 16) & 0xFFFF,
+  };
+}
+
+// Heuristic kind: items with colour/style variations are customizable;
+// everything else defaults to stackable (tools use the durability field).
+export function itemKind(idUpper, varSet) {
+  return (varSet && varSet.has(idUpper)) ? 'variable' : 'stackable';
 }
 
 // Parse items CSV (format: "id ; iName ; eng ; jpn ; ...")
@@ -168,6 +216,39 @@ export function parseVariationsCSV(text) {
     if (id) ids.add(id.toUpperCase());
   }
   return ids;
+}
+
+// ── Island / character name (live, self-validating reads) ────────────────────
+// The town/island name sits 0x2BA60 bytes before the player-1 inventory base
+// (InventoryNameOffset from community research; +0x200000 shift already baked
+// into the confirmed 3.0.3 base). It is stored as UTF-16 LE, up to 10 chars.
+export const ISLAND_NAME_OFFSET = 0x2BA60;
+export function islandNameAddr(base) { return (base ?? ADDR.ItemSlotBase) - ISLAND_NAME_OFFSET; }
+
+// Decode a UTF-16 LE hex string (memory order) into text, stopping at NUL.
+export function decodeUtf16le(hex, maxChars = 10) {
+  let s = '';
+  for (let i = 0; i < maxChars; i++) {
+    const lo = parseInt(hex.slice(i * 4, i * 4 + 2), 16);
+    const hi = parseInt(hex.slice(i * 4 + 2, i * 4 + 4), 16);
+    if (isNaN(lo) || isNaN(hi)) break;
+    const code = lo | (hi << 8);
+    if (code === 0) break;
+    s += String.fromCharCode(code);
+  }
+  return s;
+}
+
+// Accept only a clean, printable name (so an unverified read shows "—", not garbage).
+export function isCleanName(s) {
+  if (!s || s.length === 0 || s.length > 10) return false;
+  for (const ch of s) {
+    const c = ch.codePointAt(0);
+    if (c < 0x20) return false;                 // control chars
+    if (c >= 0x7f && c <= 0xa0) return false;    // C1 / nbsp junk
+    if (c === 0xfffd) return false;              // replacement char
+  }
+  return true;
 }
 
 export const TURNIP_DAYS = ['Mon AM','Mon PM','Tue AM','Tue PM','Wed AM','Wed PM','Thu AM','Thu PM','Fri AM','Fri PM','Sat AM','Sat PM'];

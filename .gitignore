@@ -20,3 +20,7 @@ Thumbs.db
 
 # Electron-builder cache
 .cache/
+
+# Bundled sprite pack — provided locally, never committed
+public/SPR.zip
+SPR.zip

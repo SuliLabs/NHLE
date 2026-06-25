@@ -61,6 +61,19 @@ contextBridge.exposeInMainWorld('sysbot', {
   minimize: () => invoke('app:minimize'),
   quit:     () => invoke('app:quit'),
 
+  // Sprites (SPR.zip unpack)
+  sprites: {
+    status:  () => invoke('sprites:status'),
+    dir:     () => invoke('sprites:dir'),
+    names:   () => invoke('sprites:names'),
+    extract: () => invoke('sprites:extract'),
+    onProgress: (cb) => {
+      const h = (_, data) => cb(data);
+      ipcRenderer.on('sprites:progress', h);
+      return () => ipcRenderer.removeListener('sprites:progress', h);
+    },
+  },
+
   // Events from main
   onEvent: (cb) => {
     ipcRenderer.on('sysbot:event', (_, data) => cb(data));

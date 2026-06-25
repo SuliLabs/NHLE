@@ -1,6 +1,6 @@
 {
   "name": "nhle",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "NHLE — New Horizons Live Editor: a cross-platform live memory editor for Animal Crossing: New Horizons 3.0.3 over sys-botbase.",
   "author": {
     "name": "SuliLabs",
@@ -25,7 +25,8 @@
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "yauzl": "^2.10.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
@@ -49,15 +50,22 @@
     },
     "files": [
       "dist/**/*",
+      "!dist/SPR.zip",
       "electron/**/*"
     ],
+    "extraResources": [
+      { "from": "public", "to": ".", "filter": ["SPR.zip"] },
+      { "from": "build/icon.png", "to": "icon.png" }
+    ],
     "win": {
+      "icon": "build/icon.png",
       "target": [
         { "target": "zip", "arch": ["x64"] }
       ],
       "artifactName": "${productName}-${version}-win-${arch}.${ext}"
     },
     "linux": {
+      "icon": "build/icon.png",
       "target": [
         { "target": "zip", "arch": ["x64"] }
       ],

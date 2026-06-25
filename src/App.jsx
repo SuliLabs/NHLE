@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import Onboarding from './components/Onboarding';
-import PokerUI from './components/PokerUI';
+import Dashboard from './components/Dashboard';
+import { setSpritesDir } from './data/sprites.js';
 
 export default function App() {
   const [phase, setPhase]     = useState('onboard'); // onboard | app
   const [connected, setConn]  = useState(false);
   const [connecting, setBusy] = useState(false);
-  const [host, setHost]       = useState('192.168.1.97');
+  const [host, setHost]       = useState('192.168.1.254');
   const [port, setPort]       = useState('6000');
   const [useSprites, setUseSprites] = useState(true);
   const [langIdx, setLangIdx] = useState(9); // chosen on the launch screen
@@ -24,8 +25,9 @@ export default function App() {
     return cleanup;
   }, []);
 
-  const handleReady = useCallback(({ useSprites }) => {
+  const handleReady = useCallback(({ useSprites, spritesDir }) => {
     setUseSprites(useSprites);
+    if (useSprites && spritesDir) setSpritesDir(spritesDir);
     setConn(true);
     setError('');
     setPhase('app');
@@ -57,11 +59,9 @@ export default function App() {
   }
 
   return (
-    <PokerUI
+    <Dashboard
       connected={connected}
-      connecting={connecting}
-      host={host} setHost={setHost} port={port}
-      onConnect={handleConnect}
+      host={host} port={port}
       onDisconnect={handleDisconnect}
       error={error}
       useSprites={useSprites}
