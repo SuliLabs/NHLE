@@ -37,6 +37,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The sprite pack is large and lives out of the repo; pull it in so the
+      # build bundles it (the app unpacks it on first launch).
+      - name: Fetch sprite pack
+        shell: bash
+        run: curl -fL --retry 3 -o public/SPR.zip "https://github.com/SuliLabs/NHLE/releases/download/sprite-pack/SPR.zip"
+
       - name: Build (${{ matrix.platform }})
         run: npm run dist:${{ matrix.platform }}
         env:
