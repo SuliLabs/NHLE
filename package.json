@@ -1,0 +1,77 @@
+{
+  "name": "nhle",
+  "version": "1.0.0",
+  "description": "NHLE — New Horizons Live Editor: a cross-platform live memory editor for Animal Crossing: New Horizons 3.0.3 over sys-botbase.",
+  "author": {
+    "name": "SuliLabs",
+    "email": "SuliLabs@users.noreply.github.com"
+  },
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/SuliLabs/NHLE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SuliLabs/NHLE.git"
+  },
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && cross-env ELECTRON_START_URL=http://localhost:5173 electron . --no-sandbox\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron": "electron .",
+    "dist": "vite build && electron-builder",
+    "dist:win": "vite build && electron-builder --win",
+    "dist:linux": "vite build && electron-builder --linux",
+    "dist:all": "vite build && electron-builder --win --linux"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "yauzl": "^2.10.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.17",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.0.12",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.nhle.app",
+    "productName": "NHLE",
+    "copyright": "Copyright © 2026 SuliLabs",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "!dist/SPR.zip",
+      "electron/**/*"
+    ],
+    "extraResources": [
+      { "from": "public", "to": ".", "filter": ["SPR.zip"] },
+      { "from": "build/icon.png", "to": "icon.png" }
+    ],
+    "win": {
+      "icon": "build/icon.png",
+      "target": [
+        { "target": "zip", "arch": ["x64"] }
+      ],
+      "artifactName": "${productName}-${version}-win-${arch}.${ext}"
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "target": [
+        { "target": "zip", "arch": ["x64"] }
+      ],
+      "category": "Game",
+      "synopsis": "Live memory editor for Animal Crossing: New Horizons",
+      "artifactName": "${productName}-${version}-linux-${arch}.${ext}"
+    }
+  }
+}
