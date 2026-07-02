@@ -1,6 +1,6 @@
 {
   "name": "nhle",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "NHLE — New Horizons Live Editor: a cross-platform live memory editor for Animal Crossing: New Horizons 3.0.3 over sys-botbase.",
   "author": {
     "name": "SuliLabs",
