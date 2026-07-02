@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useDeferredValue } from 'react';
 import {
   ADDR, PHYSICS, getSlotAddress, buildItem, decodeItem, itemKind, WRAP_PAPERS,
   islandNameAddr, characterNameAddr, decodeUtf16le, isCleanName,
@@ -30,12 +30,20 @@ function parseDB(text) {
   }
   return out;
 }
+// Read a CSV via IPC (works in the packaged file:// build); dev http fallback.
+async function readData(name) {
+  if (window.sysbot?.readData) {
+    const r = await window.sysbot.readData(name);
+    if (r?.ok) return r.data;
+  }
+  return fetch(`data/${name}`).then(r => r.text());
+}
 async function loadDB() {
   if (_db) return _db;
   const [items, recipes, variations] = await Promise.all([
-    fetch('/data/items.csv').then(r => r.text()),
-    fetch('/data/recipes.csv').then(r => r.text()),
-    fetch('/data/variations.csv').then(r => r.text()),
+    readData('items.csv'),
+    readData('recipes.csv'),
+    readData('variations.csv'),
   ]);
   const varSet = new Set(variations.split('\n').slice(1).map(l => l.split(' ; ')[0]?.trim().toUpperCase()).filter(Boolean));
   _db = { items: parseDB(items), recipes: parseDB(recipes), varSet };
@@ -53,7 +61,8 @@ function ItemIcon({ internal, color, sprites, variation, pattern }) {
     <span className="absolute inset-0 flex items-center justify-center">
       <span className="absolute inset-1.5 rounded-md" style={{ background: swatch }} />
       {src && (
-        <img src={src} alt="" draggable={false} onError={() => setIdx(i => i + 1)}
+        <img src={src} alt="" draggable={false} loading="lazy" decoding="async"
+             onError={() => setIdx(i => i + 1)}
              className="relative max-w-[86%] max-h-[86%] object-contain" />
       )}
     </span>
@@ -244,11 +253,20 @@ function InventoryPanel({ connected, useSprites, langIdx, t }) {
     return db.items;                                // the item itself
   }, [listTab, db]);
 
+  // Deferred: typing stays responsive; the 500-row list re-renders just after.
+  const deferredSearch = useDeferredValue(search);
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();   // case-insensitive search…
+    const q = deferredSearch.trim().toLowerCase();   // case-insensitive search…
     if (!q) return listSource.slice(0, 500);
-    return listSource.filter(i => nameOf(i).toLowerCase().includes(q) || i.id.toLowerCase().includes(q)).slice(0, 500);
-  }, [search, listSource, nameOf]);
+    const out = [];
+    for (const i of listSource) {
+      if (nameOf(i).toLowerCase().includes(q) || i.id.toLowerCase().includes(q)) {
+        out.push(i);
+        if (out.length >= 500) break;   // stop scanning once the cap is hit
+      }
+    }
+    return out;
+  }, [deferredSearch, listSource, nameOf]);
 
   const refresh = useCallback(async () => {
     if (!connected) return;
@@ -432,6 +450,16 @@ function InventoryPanel({ connected, useSprites, langIdx, t }) {
 function TrucosPanel({ connected, t }) {
   const [time, setTime]     = useState(false);
   const [status, setStatus] = useState('');
+
+  // Reflect the real in-game state: read the patched instruction on entry.
+  useEffect(() => {
+    if (!connected) return;
+    let alive = true;
+    window.sysbot.peekMain(hexA(ADDR.FreezeTime), 4).then(r => {
+      if (alive && r.ok) setTime(r.data.toUpperCase().startsWith(PHYSICS.freezeTime));
+    }).catch(() => {});
+    return () => { alive = false; };
+  }, [connected]);
 
   const setFreeze = async (frz) => {
     const r = await window.sysbot.pokeMain(hexA(ADDR.FreezeTime), '0x' + (frz ? PHYSICS.freezeTime : PHYSICS.unfreezeTime));

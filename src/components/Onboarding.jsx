@@ -15,13 +15,14 @@ import { setSpritesDir, loadSpriteIndex } from '../data/sprites.js';
  */
 const CHOICE_KEY = 'nhle.sprites'; // 'yes' | 'no'
 
-export default function Onboarding({ host, setHost, port, setPort, langIdx, setLangIdx, onReady }) {
+export default function Onboarding({ host, setHost, port, setPort, langIdx, setLangIdx, initialError = '', onReady }) {
   const [step, setStep]       = useState('connect'); // connect | sprites | unpacking
   const [connecting, setConn] = useState(false);
   const [ok, setOk]           = useState(false);
-  const [error, setError]     = useState('');
+  const [error, setError]     = useState(initialError);  // e.g. "Disconnected: …" from the app
   const [progress, setProg]   = useState({ done: 0, total: 0 });
   const offRef = useRef(null);
+  const busyRef = useRef(false);   // blocks a second Enter while connecting
   const t = makeT(langIdx);
 
   useEffect(() => () => { offRef.current?.(); }, []);
@@ -70,9 +71,12 @@ export default function Onboarding({ host, setHost, port, setPort, langIdx, setL
   }, [useTiles, useImages, onReady]);
 
   const connect = useCallback(async () => {
+    if (busyRef.current) return;
+    busyRef.current = true;
     setConn(true); setError(''); setOk(false);
     const res = await window.sysbot.connect(host.trim(), port.trim());
     setConn(false);
+    busyRef.current = false;
     if (res.ok) { setOk(true); setTimeout(afterConnect, 650); }
     else setError(res.error || t('couldNotConnect'));
   }, [host, port, t, afterConnect]);

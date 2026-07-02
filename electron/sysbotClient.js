@@ -27,7 +27,8 @@ class SysBotClient extends EventEmitter {
         const line = this.buffer.slice(0, idx).toString().replace(/\r$/, '').trim();
         this.buffer = this.buffer.slice(idx + 1);
         this.queue.shift();
-        item.resolve(line);
+        clearTimeout(item.timer);
+        if (!item.timedOut) item.resolve(line);   // late reply after a timeout → discard
 
       } else if (item.type === 'binary') {
         // pixelPeek: 4-byte LE size header, then JPEG bytes
@@ -40,7 +41,8 @@ class SysBotClient extends EventEmitter {
         const data = this.buffer.slice(0, item.size);
         this.buffer = this.buffer.slice(item.size);
         this.queue.shift();
-        item.resolve(data);
+        clearTimeout(item.timer);
+        if (!item.timedOut) item.resolve(data);
       } else {
         break;
       }
@@ -50,7 +52,10 @@ class SysBotClient extends EventEmitter {
   _rejectAll(err) {
     const q = [...this.queue];
     this.queue = [];
-    q.forEach(item => item.reject(err));
+    q.forEach(item => {
+      clearTimeout(item.timer);
+      if (!item.timedOut) item.reject(err);
+    });
   }
 
   connect(host, port = 6000) {
@@ -103,27 +108,27 @@ class SysBotClient extends EventEmitter {
         return reject(new Error('Not connected to Switch'));
       }
 
-      const timer = setTimeout(() => {
-        const idx = this.queue.findIndex(i => i._id === timer);
-        if (idx !== -1) this.queue.splice(idx, 1);
+      // Fire-and-forget commands (poke, click, …) have no reply to wait for.
+      if (!type) {
+        this.socket.write(command + '\r\n', (err) => (err ? reject(err) : resolve(null)));
+        return;
+      }
+
+      const item = { type, resolve, reject, timedOut: false, timer: null };
+      item.timer = setTimeout(() => {
+        // Keep the item queued: its reply may still arrive and must be
+        // consumed (discarded) so later replies stay matched to their command.
+        item.timedOut = true;
         reject(new Error(`Timeout: ${command.split(' ')[0]}`));
       }, 8000);
-
-      if (type) {
-        this.queue.push({ type, resolve, reject, _id: timer });
-      }
+      this.queue.push(item);
 
       this.socket.write(command + '\r\n', (err) => {
         if (err) {
-          clearTimeout(timer);
-          if (type) {
-            const idx = this.queue.findIndex(i => i._id === timer);
-            if (idx !== -1) this.queue.splice(idx, 1);
-          }
+          clearTimeout(item.timer);
+          const idx = this.queue.indexOf(item);
+          if (idx !== -1) this.queue.splice(idx, 1);
           reject(err);
-        } else if (!type) {
-          clearTimeout(timer);
-          resolve(null);
         }
       });
     });

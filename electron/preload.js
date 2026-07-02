@@ -61,6 +61,9 @@ contextBridge.exposeInMainWorld('sysbot', {
   minimize: () => invoke('app:minimize'),
   quit:     () => invoke('app:quit'),
 
+  // Item database CSVs (works from the packaged file:// origin too)
+  readData: (name) => invoke('app:readData', name),
+
   // Sprites (SPR.zip unpack)
   sprites: {
     status:  () => invoke('sprites:status'),

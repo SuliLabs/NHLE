@@ -47,11 +47,6 @@ function createWindow() {
     win.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 
-  // Forward client disconnect events to renderer
-  client.on('disconnected', (reason) => {
-    win.webContents.send('sysbot:event', { type: 'disconnected', reason });
-  });
-
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
@@ -74,6 +69,14 @@ app.whenReady().then(() => {
     }
   });
   createWindow();
+});
+
+// Forward client disconnect events to the renderer. Registered once, globally,
+// so recreating the window (macOS activate) doesn't stack duplicate listeners.
+client.on('disconnected', (reason) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('sysbot:event', { type: 'disconnected', reason });
+  }
 });
 
 app.on('window-all-closed', () => {
@@ -101,6 +104,20 @@ function wrap(fn) {
 // Window controls
 ipcMain.handle('app:minimize', () => { mainWindow?.minimize(); return { ok: true }; });
 ipcMain.handle('app:quit',     () => { client.disconnect(); app.quit(); return { ok: true }; });
+
+// Item database CSVs. Served over IPC because the packaged app runs from a
+// file:// origin where fetch() cannot load local files (dev works over http).
+ipcMain.handle('app:readData', (_, name) => {
+  try {
+    const safe = path.basename(String(name));            // no traversal
+    const dir = isDev
+      ? path.join(__dirname, '..', 'public', 'data')
+      : path.join(__dirname, '..', 'dist', 'data');      // inside app.asar
+    return { ok: true, data: fs.readFileSync(path.join(dir, safe), 'utf8') };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
 
 // ── Sprites (SPR.zip → userData/SPR) ─────────────────────────────────────────
 // The bundled SPR.zip holds img/<InternalName>.png for every item. It is shipped
@@ -167,6 +184,7 @@ ipcMain.handle('sprites:extract', (evt) => new Promise((resolve) => {
     };
     zip.on('entry', (entry) => {
       const safe = entry.fileName.replace(/\\/g, '/');
+      if (safe.split('/').includes('..')) { done++; send(); zip.readEntry(); return; }  // traversal guard
       const outPath = path.join(outRoot, safe);
       if (/\/$/.test(safe)) { try { fs.mkdirSync(outPath, { recursive: true }); } catch {} done++; zip.readEntry(); return; }
       try { fs.mkdirSync(path.dirname(outPath), { recursive: true }); } catch {}

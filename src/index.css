@@ -37,34 +37,7 @@ input, textarea {
   background: #22d3ee;
 }
 
-.glow-cyan {
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
-}
-.glow-green {
-  box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
-}
-.glow-red {
-  box-shadow: 0 0 8px rgba(248, 113, 113, 0.4);
-}
-
-.btn-controller {
-  @apply rounded-full font-bold text-sm flex items-center justify-center
-         transition-all duration-100 cursor-pointer select-none border;
-}
-.btn-controller:active {
-  transform: scale(0.9);
-  filter: brightness(1.4);
-}
-
-.hex-input {
-  @apply bg-gray-900 border border-gray-700 rounded px-2 py-1 text-cyan-300
-         text-sm font-mono focus:outline-none focus:border-cyan-500;
-}
-.hex-input:focus {
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.3);
-}
-
-/* ── Animal Crossing skin (ACNHPokerCore layout, ACNH palette) ─────── */
+/* ── Animal Crossing palette ─────── */
 :root {
   --pk-bg:       #e8dcb0;  /* warm tan window background  */
   --pk-titlebar: #6cb43f;  /* leaf-green chrome           */
@@ -84,12 +57,6 @@ input, textarea {
   --pk-green:    #2f7d2f;  /* connected / accent text     */
   --pk-text:     #5c4a30;  /* primary text (brown)        */
   --pk-on-green: #ffffff;  /* text on green chrome        */
-}
-
-.pk-root {
-  background: var(--pk-bg);
-  color: var(--pk-text);
-  font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif;
 }
 
 .pk-btn {
@@ -128,37 +95,6 @@ input, textarea {
 .pk-input:focus,
 .pk-select:focus { border-color: var(--pk-btn-bd); }
 
-.pk-ipbox {
-  background: #fffdf4;
-  border: 2px solid var(--pk-btn-bd);
-  color: var(--pk-green);
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: 1px;
-  text-align: center;
-  border-radius: 8px;
-  padding: 2px 8px;
-}
-
-/* vertical side tab */
-.pk-vtab {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  background: var(--pk-tab);
-  color: var(--pk-on-green);
-  font-weight: 800;
-  letter-spacing: 2px;
-  font-size: 13px;
-  cursor: pointer;
-  border: none;
-  border-bottom: 2px solid #4e8a32;
-  padding: 10px 7px;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.15);
-  transition: background 0.1s;
-}
-.pk-vtab:hover   { background: #69b246; }
-.pk-vtab.pk-on   { background: var(--pk-tab-act); color: #5c3d05; text-shadow: none; }
-
 /* item grid slot */
 .pk-slot {
   background: var(--pk-slot);
@@ -188,12 +124,6 @@ input, textarea {
   background: #fff; transition: left 0.15s;
 }
 .pk-toggle.pk-on::after { left: 21px; }
-
-/* scrollbar inside the AC skin */
-.pk-root ::-webkit-scrollbar        { width: 14px; }
-.pk-root ::-webkit-scrollbar-track  { background: #e0d3a6; }
-.pk-root ::-webkit-scrollbar-thumb  { background: #8ac95a; border: 3px solid #e0d3a6; border-radius: 7px; }
-.pk-root ::-webkit-scrollbar-thumb:hover { background: #6cb43f; }
 
 /* onboarding (connect + sprites) */
 .pk-onboard {
@@ -347,7 +277,7 @@ input, textarea {
   color: #7a5a12; padding: 18px 20px;
 }
 
-/* segmented category selector (Items / Recipes / Variations) */
+/* segmented category selector (Items / Recipes) */
 .nh-seg {
   display: flex; gap: 4px; padding: 4px;
   background: rgba(150,170,110,0.18); border-radius: 999px;
